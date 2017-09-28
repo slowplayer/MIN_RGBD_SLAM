@@ -1,0 +1,44 @@
+cmake_minimum_required(VERSION 2.8)
+project(MIN_RGBD_SLAM)
+
+set(CMAKE_BUILD_TYPE "Release")
+set(CMAKE_CXX_FLAGS "-std=c++11 -O3")
+
+find_package(OpenCV REQUIRED)
+
+find_package(Pangolin REQUIRED)
+
+find_package(Eigen3 3.1.0 REQUIRED)
+
+find_package(octomap REQUIRED)
+
+find_package( PCL REQUIRED COMPONENT common io )
+
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
+
+add_library(${PROJECT_NAME} SHARED )
+
+include_directories(
+${PROJECT_SOURCE_DIR}/include
+${EIGEN3_INCLUDE_DIR}
+${Pangolin_INCLUDE_DIRS}
+${G2O_INCLUDE_DIRS}
+${OCTOMAP_INCLUDE_DIRS}
+${OPENCV_INCLUDE_DIRS}
+${PCL_INCLUDE_DIRS}
+)
+
+target_link_libraries(${PROJECT_NAME}
+${OpenCV_LIBS}
+${EIGEN3_LIBS}
+${Pangolin_LIBRARIES}
+${OCTOMAP_LIBRARIES}
+${G2O_LIBRARIES}
+${PCL_LIBRARIES}
+)
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
+
+add_executable(min_rgbd_slam src/main.cc)
+target_link_libraries(min_rgbd_slam ${PROJECT_NAME})
+
