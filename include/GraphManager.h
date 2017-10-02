@@ -10,6 +10,7 @@
 
 
 #include "Node.h"
+#include "MatchingResult.h"
 
 #include "g2o/types/slam3d/se3quat.h"
 #include "g2o/types/slam3d/edge_se3.h"
