@@ -203,8 +203,53 @@ std::list< int > GraphManager::getPotentialEdgeTargetsWithDijkstra(const Node* n
   
   return ids_to_link_to;
 }
-void GraphManager::optimizeGraph()
+double GraphManager::optimizeGraph()
 {
+  ParameterServer* ps=ParameterServer::instance();
+  double stop_cond=ps->getParm("optimizer_iterations");
+  double chi2=std::numeric_limits<double>::max();
+  //TODO:need trylock
+  {
+    std::unique_lock<std::mutex> lock(mMutexOptimizer);
+    
+    optimizer_->setFixed(camera_vertices,false);
+    optimizer_->vertex(graph_[0]->vertex_id_)->setFixed(true);
+    
+    g2o::HyperGraph::EdgeSet edges;
+    edges.insert(cam_cam_edges_.begin(),cam_cam_edges_.end());
+    optimizer_->initializeOptimization(edges);
+    
+    //optimize to convergence
+    int currentIt=0;
+    double prev_chi2;
+    do
+    {
+      prev_chi2=chi2;
+      currentIt+=optimizer_->optimize(5);
+      optimizer_->computeActiveErrors();
+      chi2=optimizer_->chi2();
+    }while(chi2/prev_chi2<(1.0-stop_cond));
+    optimizer_->setFixed(camera_vertices,false);
+  }
+  
+  Node* newest_node=graph_[graph_.size()-1];
+  if(updateCloudOrigin(newest_node))
+    renderToOctomap(newest_node);
+  return chi2;
+}
+bool GraphManager::updateCloudOrigin(Node* node)
+{
+  if(!node->valid_tf_estimate_)
+    return false;
+  g2o::VertexSE3* v=dynamic_cast<g2o::VertexSE3*>(optimizer_->vertex(node->vertex_id_));
+  if(!v)
+    return false;
+  if(node->pc_col->size()==0)
+    return false;
+  //TODO:unnecessary?
+  node->pc_col->sensor_origin_.head<3>()=v->estimate().translation().cast<float>();
+  node->pc_col->sensor_orientation_=v->estimate().rotation().cast<float>();
+  return true;
+}
 
-} 
 }

@@ -50,7 +50,10 @@ private:
 		       bool& edge_to_keyframe);
   
   
-  void optimizeGraph();
+  double optimizeGraph();
+  
+  bool updateCloudOrigin(Node* node);
+  void renderToOctomap(Node* node);
   
   void addKeyframe(int id);
   std::list<int> getPotentialEdgeTargetsWithDijkstra(const Node* new_node,

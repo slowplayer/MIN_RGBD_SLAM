@@ -5,7 +5,7 @@ namespace MIN_RGBD_SLAM
 ParameterServer* ParameterServer::_instance=NULL;
 ParameterServer::ParameterServer()
 {
-
+  
 }
 ParameterServer* ParameterServer::instance()
 {
